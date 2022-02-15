@@ -10,7 +10,7 @@ app.get('/logs', async (req, res) => {
         const logs = await pool.query("SELECT * FROM weight_logs");
         res.json(logs.rows);
     } catch(e) {
-        console.error(e.message);
+        res.status(500).send(e.message);
     }
 })
 
@@ -24,7 +24,7 @@ app.post('/logs', async (req, res) => {
         [weight, date])
         res.json(newLog.rows[0]);
     } catch(e) {
-        console.error(e.message);
+        res.status(500).send(e.message);
     }
 })
 
@@ -40,7 +40,7 @@ app.put('/logs/:id', async (req, res) => {
         [weight, date, id]);
         res.send(200);
     } catch(e) {
-        console.error(e.message);
+        res.status(500).send(e.message);
     }
 })
 
@@ -51,7 +51,7 @@ app.delete('/logs/:id', async (req, res) => {
         await pool.query("DELETE FROM weight_logs WHERE weight_log_id = $1", [id]);
         res.send(200);
     } catch(e) {
-        console.error(e.message)
+        res.status(500).send(e.message);
     }
 })
 
