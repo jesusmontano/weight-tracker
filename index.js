@@ -4,10 +4,15 @@ const pool = require('./db');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const keys = require('./keys');
+const passport = require('passport');
+const passportHelpers =  require('./passportHelpers');
+
+require('./passport')(passport);
+app.use(passport.initialize());
 
 app.use(express.json());
 
-app.get('/logs', async (req, res) => {
+app.get('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     try {
         const logs = await pool.query("SELECT * FROM weight_logs");
         res.json(logs.rows);
@@ -16,7 +21,7 @@ app.get('/logs', async (req, res) => {
     }
 })
 
-app.post('/logs', async (req, res) => {
+app.post('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     let { date, weight } = req.body;
 
     date = new Date(date).toString();
@@ -30,7 +35,7 @@ app.post('/logs', async (req, res) => {
     }
 })
 
-app.put('/logs/:id', async (req, res) => {
+app.put('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
     const { id } = req.params;
 
     let { date, weight } = req.body;
@@ -46,7 +51,7 @@ app.put('/logs/:id', async (req, res) => {
     }
 })
 
-app.delete('/logs/:id', async (req, res) => {
+app.delete('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
     const { id } = req.params;
     
     try {
