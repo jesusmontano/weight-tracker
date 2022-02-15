@@ -72,6 +72,25 @@ app.post('/register', async (req, res) => {
     } catch(e) {
         return res.status(500).send(e.message);
     }
+});
+
+app.post('/login', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (!result.rows.length) return res.status(404).send("There is no account associated with that email.");
+        const hash = result.rows[0].password;
+        const isCorrect = bcrypt.compareSync(password, hash);
+
+        if (isCorrect) {
+            res.status(200).send();
+        } else {
+            res.status(401).send();
+        }
+    } catch(e) {
+        return res.status(500).send(e.message);
+    }
 })
 
 app.listen(3000, () => {
