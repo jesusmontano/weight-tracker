@@ -2,6 +2,8 @@ const express = require('express');
 const app = express();
 const pool = require('./db');
 const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const keys = require('./keys');
 
 app.use(express.json());
 
@@ -84,9 +86,24 @@ app.post('/login', async (req, res) => {
         const isCorrect = bcrypt.compareSync(password, hash);
 
         if (isCorrect) {
-            res.status(200).send();
+            const payload = {
+                user_id: result.rows[0].user_id,
+                email: result.rows[0].email
+            }
+
+            jwt.sign(
+                payload,
+                keys.secretOrKey,
+                // Tell the key to expire in one hour
+                { expiresIn: 3600 },
+                (err, token) => {
+                    res.json({
+                        success: true,
+                        token: 'Bearer ' + token
+                    });
+                });
         } else {
-            res.status(401).send();
+            res.status(400).send("The password is incorrect.");
         }
     } catch(e) {
         return res.status(500).send(e.message);
