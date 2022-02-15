@@ -1,4 +1,5 @@
 const express = require('express');
+const res = require('express/lib/response');
 const app = express();
 const pool = require('./db');
 
@@ -40,6 +41,17 @@ app.put('/logs/:id', async (req, res) => {
         res.send(200);
     } catch(e) {
         console.error(e.message);
+    }
+})
+
+app.delete('/logs/:id', async (req, res) => {
+    const { id } = req.params;
+    
+    try {
+        await pool.query("DELETE FROM weight_logs WHERE weight_log_id = $1", [id]);
+        res.send(200);
+    } catch(e) {
+        console.error(e.message)
     }
 })
 
