@@ -1,7 +1,7 @@
 const express = require('express');
-const res = require('express/lib/response');
 const app = express();
 const pool = require('./db');
+const bcrypt = require('bcryptjs');
 
 app.use(express.json());
 
@@ -52,6 +52,25 @@ app.delete('/logs/:id', async (req, res) => {
         res.send(200);
     } catch(e) {
         res.status(500).send(e.message);
+    }
+})
+
+app.post('/register', async (req, res) => {
+    const { email, password } = req.body;
+
+    try {
+        const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
+        if (result.rows.length > 0) {
+            return res.status(404).send("An account already exists for this email account.");
+        } else {
+            const salt = bcrypt.genSaltSync(10);
+            const hash = bcrypt.hashSync(password, salt);
+            const newUser = await pool.query("INSERT INTO users (email, password) VALUES ($1, $2) RETURNING *",
+            [email, hash]);
+            res.json(newUser.rows[0]);
+        }
+    } catch(e) {
+        return res.status(500).send(e.message);
     }
 })
 
