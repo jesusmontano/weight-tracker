@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const keys = require('./keys');
 const passport = require('passport');
 const passportHelpers =  require('./passportHelpers');
+const validations = require('./validations');
 
 require('./passport')(passport);
 app.use(passport.initialize());
@@ -69,6 +70,14 @@ app.delete('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
 
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
+
+    if (!validations.validateEmail(email).isValid) {
+        return res.status(400).send(validations.validateEmail(email).errors);
+    }
+
+    if (!validations.validatePassword(password).isValid) {
+        return res.status(400).send(validations.validatePassword(password).errors);
+    }
 
     try {
         const result = await pool.query("SELECT * FROM users WHERE email = $1", [email]);
