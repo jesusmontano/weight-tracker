@@ -13,8 +13,10 @@ app.use(passport.initialize());
 app.use(express.json());
 
 app.get('/logs', passportHelpers.authenticateJWT, async (req, res) => {
+    const userId = req.user.user_id
+
     try {
-        const logs = await pool.query("SELECT * FROM weight_logs");
+        const logs = await pool.query("SELECT * FROM weight_logs WHERE user_id = $1", [userId]);
         res.json(logs.rows);
     } catch(e) {
         res.status(500).send(e.message);
