@@ -7,6 +7,7 @@ const keys = require('./keys');
 const passport = require('passport');
 const passportHelpers =  require('./passportHelpers');
 const validations = require('./validations');
+const validator = require('validator');
 
 require('./passport')(passport);
 app.use(passport.initialize());
@@ -28,9 +29,15 @@ app.post('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     let { date, weight } = req.body;
     const userId = req.user.user_id
 
-    // TODO: Add validations
+    date = validator.toDate(date);
 
-    date = new Date(date).toString();
+    if (!date) return res.status(400).send('Date format is invalid.');
+
+    if (!validations.validateDate(date).isValid) {
+        res.status(400).send(validations.validateDate(date).errors);
+    }
+
+    date = date.toISOString().slice(0, 10);
 
     try {
         const newLog = await pool.query("INSERT INTO weight_logs (weight, date, user_id) VALUES ($1, $2, $3) RETURNING *", 
@@ -43,12 +50,25 @@ app.post('/logs', passportHelpers.authenticateJWT, async (req, res) => {
 
 app.put('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
     const { id } = req.params;
+    const userId = req.user.user_id
 
     let { date, weight } = req.body;
 
-    date = new Date(date).toString();
+    date = validator.toDate(date);
+
+    if (!date) return res.status(400).send('Date format is invalid.');
+
+    if (!validations.validateDate(date).isValid) {
+        res.status(400).send(validations.validateDate(date).errors);
+    }
+
+    date = date.toISOString().slice(0, 10);
 
     try {
+        const result = await pool.query("SELECT * FROM weight_logs WHERE weight_log_id = $1", [id]);
+
+        if (result.rows[0].user_id !== userId) return res.send(401);
+
         await pool.query("UPDATE weight_logs SET weight = $1, date = $2 WHERE weight_log_id = $3", 
         [weight, date, id]);
         res.send(200);
@@ -59,8 +79,13 @@ app.put('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
 
 app.delete('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
     const { id } = req.params;
+    const userId = req.user.user_id
     
     try {
+        const result = await pool.query("SELECT * FROM weight_logs WHERE weight_log_id = $1", [id]);
+
+        if (result.rows[0].user_id !== userId) return res.send(401);
+
         await pool.query("DELETE FROM weight_logs WHERE weight_log_id = $1", [id]);
         res.send(200);
     } catch(e) {

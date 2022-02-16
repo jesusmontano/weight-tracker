@@ -10,7 +10,7 @@ CREATE TABLE weight_logs(
     weight_log_id SERIAL PRIMARY KEY,
     user_id INT NOT NULL,
     weight DECIMAL(5,2) NOT NULL,
-    date VARCHAR(344) NOT NULL,
+    date DATE NOT NULL,
 
     FOREIGN KEY (user_id) REFERENCES users(user_id)
 );

@@ -27,7 +27,21 @@ const validatePassword = (password) => {
     }
 }
 
+const validateDate = (date) => {
+    const errors = {};
+
+    if (!validator.isDate(date)) {
+        errors.date = 'Date is not valid. Try the following format: "YYYY-MM-DD".'
+    }
+
+    return {
+        isValid: Object.keys(errors).length === 0,
+        errors
+    }
+}
+
 module.exports = {
     validateEmail,
-    validatePassword
+    validatePassword,
+    validateDate
 };
