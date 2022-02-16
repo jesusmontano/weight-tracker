@@ -23,12 +23,15 @@ app.get('/logs', passportHelpers.authenticateJWT, async (req, res) => {
 
 app.post('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     let { date, weight } = req.body;
+    const userId = req.user.user_id
+
+    // TODO: Add validations
 
     date = new Date(date).toString();
 
     try {
-        const newLog = await pool.query("INSERT INTO weight_logs (weight, date) VALUES ($1, $2) RETURNING *", 
-        [weight, date])
+        const newLog = await pool.query("INSERT INTO weight_logs (weight, date, user_id) VALUES ($1, $2, $3) RETURNING *", 
+        [weight, date, userId])
         res.json(newLog.rows[0]);
     } catch(e) {
         res.status(500).send(e.message);
