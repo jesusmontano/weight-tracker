@@ -40,6 +40,12 @@ app.post('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     date = date.toISOString().slice(0, 10);
 
     try {
+        const result = await pool.query("SELECT * FROM weight_logs WHERE date = $1 AND user_id = $2", [date, userId]);
+
+        if (result.rows.length) {
+            return res.status(403).send("Entry already exists for this date");
+        }
+
         const newLog = await pool.query("INSERT INTO weight_logs (weight, date, user_id) VALUES ($1, $2, $3) RETURNING *", 
         [weight, date, userId])
         res.json(newLog.rows[0]);
