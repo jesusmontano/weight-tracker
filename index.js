@@ -105,8 +105,6 @@ app.delete('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
-    console.log(req.body);
-
     if (!validations.validateEmail(email).isValid) {
         return res.status(400).send(validations.validateEmail(email).errors);
     }
