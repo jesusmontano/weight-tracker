@@ -8,11 +8,14 @@ const passport = require('passport');
 const passportHelpers =  require('./passportHelpers');
 const validations = require('./validations');
 const validator = require('validator');
+const cors = require('cors');
 
 require('./passport')(passport);
 app.use(passport.initialize());
 
 app.use(express.json());
+
+app.use(cors())
 
 app.get('/logs', passportHelpers.authenticateJWT, async (req, res) => {
     const userId = req.user.user_id
@@ -102,6 +105,8 @@ app.delete('/logs/:id', passportHelpers.authenticateJWT, async (req, res) => {
 app.post('/register', async (req, res) => {
     const { email, password } = req.body;
 
+    console.log(req.body);
+
     if (!validations.validateEmail(email).isValid) {
         return res.status(400).send(validations.validateEmail(email).errors);
     }
@@ -160,6 +165,6 @@ app.post('/login', async (req, res) => {
     }
 })
 
-app.listen(3000, () => {
-    console.log("Server is listening on port 3000.");
+app.listen(4000, () => {
+    console.log("Server is listening on port 4000.");
 })
